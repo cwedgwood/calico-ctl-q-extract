@@ -1,0 +1,217 @@
+# Configuration for federation controller
+federation:
+  enabled: false
+  # Optional configuration for setting resource limits on the federation controller container.
+  resources:
+    requests:
+      cpu: #"100m"
+      memory: #"128Mi"
+    limits:
+      cpu: #"2000m"
+      memory: #"1024Mi"
+
+network: calico
+
+# initialPool configures the pool used by Calico when using calico-ipam.
+# Note that these settings are only applied during initial install.
+# Changing these settings post-install will have no effect.
+initialPool:
+  # The default IPv4 pool to create on startup if none exists. Pod IPs will be
+  # chosen from this range. Changing this value after installation will have
+  # no effect. This should fall within `--cluster-cidr`.
+  cidr: "192.168.0.0/16"
+
+  # Can be "Never", "CrossSubnet", or "Always"
+  ipIpMode: Always
+
+# Sets the ipam. Can be 'calico-ipam' or 'host-local'
+ipam: calico-ipam
+
+datastore: kubernetes
+app_layer_policy:
+  enabled: false
+  configured: false
+
+# Configuration for etcd
+etcd:
+  # Endpoints for the etcd instances. This can be a comma separated list of endpoints.
+  endpoints:
+  # Authentication information for accessing secure etcd instances.
+  tls:
+    crt:
+    ca:
+    key:
+
+# Configuration for setting up Calico node
+node:
+  image: quay.io/tigera/cnx-node
+  tag: v2.6.0
+  env:
+    # Optional environment variables for configuring Calico node.
+    # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
+    # - name: FELIX_LOGSEVERITYSCREEN
+    #   value: "debug"
+  # Optional configuration for setting resource limits on the Calico node container.
+  resources:
+    requests:
+      cpu: #"250m"
+      memory: #"128Mi"
+    limits:
+      cpu: #"2000m"
+      memory: #"1024Mi"
+
+# Configuration for setting up Calico CNI.
+cni:
+  # cni does not use imageRegistry as it is an external OS image
+  image: quay.io/calico/cni
+  tag: v3.10.0
+  env:
+    # Optional environment variables for configuring Calico CNI.
+    # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
+    # - name: FOO
+    #   value: bar
+
+# Configuration for setting up Calico kube controllers
+kubeControllers:
+  image: quay.io/tigera/kube-controllers
+  tag: v2.6.0
+  env:
+    # Optional environment variables for configuring Calico kube controllers.
+    # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
+    # - name: LOG_LEVEL
+    #   value: debug
+  # Optional configuration for setting resource limits on the Calico kube controllers container.
+  resources:
+    requests:
+      cpu: #"100m"
+      memory: #"128Mi"
+    limits:
+      cpu: #"2000m"
+      memory: #"1024Mi"
+
+# Configuration for setting up Typha
+typha:
+  image: quay.io/tigera/typha
+  tag: v2.6.0
+  enabled: false
+  env:
+    # Optional environment variables for configuring Typha.
+    # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
+    # - name: TYPHA_LOGSEVERITYSYS
+    #   value: debug
+  # Optional configuration for setting resource limits on the Typha container.
+  resources:
+    requests:
+      cpu: #"100m"
+      memory: #"128Mi"
+    limits:
+      cpu: #"2000m"
+      memory: #"1024Mi"
+  # Authentication information for securing communications between Typha and Felix.
+  tls:
+    # Leave these blank to use self-signed certs.
+    caBundle: 
+    typhaCrt: 
+    typhaKey: 
+    felixCrt: 
+    felixKey: 
+    # Change these if you generated certs with different common names on them
+    typhaCommonName: calico-typha
+    felixCommonName: calico-felix
+
+# Configuration for the Calico aggregated API server.
+apiserver:
+  image: quay.io/tigera/cnx-apiserver
+  tag: v2.6.0
+  # Authentication information for securing communications between TSEE manager and TSEE apiserver.
+  # Leave blank to use self-signed certs.
+  tls:
+    crt: 
+    key: 
+    cabundle: 
+  runAsPrivileged: false
+  env:
+    # Optional environment variables for configuring the Calico API Server.
+    # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
+    # - name: FOO
+    #   value: bar
+  # Optional configuration for setting resource limits on the API server container.
+  resources:
+    requests:
+      cpu: #"100m"
+      memory: #"128Mi"
+    limits:
+      cpu: #"2000m"
+      memory: #"1024Mi"
+
+# Configuration for the Calico query server.
+queryserver:
+  image: quay.io/tigera/cnx-queryserver
+  tag: v2.6.0
+  env:
+    # Optional environment variables for configuring the Calico query server.
+    # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
+    # - name: FOO
+    #   value: bar
+  # Optional configuration for setting resource limits on the Calico query server container.
+  resources:
+    requests:
+      cpu: #"100m"
+      memory: #"128Mi"
+    limits:
+      cpu: #"2000m"
+      memory: #"1024Mi"
+
+calicoctl:
+  image: quay.io/tigera/calicoctl
+  tag: v2.6.0
+
+dikastes:
+  image: quay.io/tigera/dikastes
+  tag: v2.6.0
+
+flexvol:
+  # flexvol does not use imageRegistry as it is an external OS image
+  image: quay.io/calico/pod2daemon-flexvol
+  tag: v3.10.0
+
+cpHorizontalAutoscaler:
+  image: gcr.io/google-containers/cluster-proportional-autoscaler-amd64
+  tag: 1.1.2-r2
+
+cpVerticalAutoscaler:
+  image: gcr.io/google-containers/cpvpa-amd64
+  tag: v0.6.0
+
+# Optional configuration for setting custom BGP templates
+bgp:
+  birdConfigTemplate:
+  birdIpamConfigTemplate:
+  bird6ConfigTemplate:
+  bird6IpamConfigTemplate:
+
+# TODO: move to helpers
+rbac: ""
+platform: ""
+
+# Optionally specify docker configuration to be used for imagePullSecrets. 
+# Default to an empty list. 
+#
+# E.g. 
+# imagePullSecrets:
+#   <secret_name>: <.docker/config.json contents>
+imagePullSecrets: {}
+
+# Configuration for the Tigera Cloud Controllers.
+cloudControllers:
+  image: quay.io/tigera/cloud-controllers
+  tag: v2.6.0
+  enabled: false
+  # Optional configuration for setting resource limits on the Cloud Controllers container.
+  resources:
+    requests:
+      cpu: #"100m"
+      memory: #"128Mi"
+    limits:
+      cpu: #"2000m"
+      memory: #"1024Mi"
