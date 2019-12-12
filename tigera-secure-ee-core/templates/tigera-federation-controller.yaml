@@ -1,5 +1,5 @@
 {{- if .Values.federation.enabled -}}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tigera-federation-controller
@@ -11,6 +11,9 @@ metadata:
 spec:
   # The federation controller can only have a single active instance.
   replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: tigera-federation-controller
   strategy:
     type: Recreate
   template:
@@ -30,6 +33,10 @@ spec:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
       serviceAccountName: tigera-federation-controller
+{{ if .Values.controlPlaneNodeSelector }}
+      nodeSelector:
+{{- toYaml .Values.controlPlaneNodeSelector | indent 8 }}
+{{- end }}
 {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{- range $key, $value := .Values.imagePullSecrets }}
@@ -38,7 +45,7 @@ spec:
 {{- end }}
       containers:
         - name: tigera-federation-controller
-          image: {{.Values.kubeControllers.image}}:{{.Values.kubeControllers.tag}}
+          image: {{ join ":" (list .Values.kubeControllers.image .Values.kubeControllers.tag) }}
 {{ tuple .Values.federation.resources | include "calico.resourceLimits" | indent 10 -}}
           env:
             # Set log level to debug

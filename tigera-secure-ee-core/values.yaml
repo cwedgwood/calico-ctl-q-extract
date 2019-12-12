@@ -12,6 +12,10 @@ federation:
 
 network: calico
 
+# controlPlaneNodeSelector is a dictionary of node selectors to apply to
+# all 'control-plane' components.
+controlPlaneNodeSelector: {}
+
 # initialPool configures the pool used by Calico when using calico-ipam.
 # Note that these settings are only applied during initial install.
 # Changing these settings post-install will have no effect.
@@ -26,6 +30,9 @@ initialPool:
 
 # Sets the ipam. Can be 'calico-ipam' or 'host-local'
 ipam: calico-ipam
+
+# Sets the mtu.
+mtu: 1440
 
 datastore: kubernetes
 app_layer_policy:
@@ -45,12 +52,18 @@ etcd:
 # Configuration for setting up Calico node
 node:
   image: quay.io/tigera/cnx-node
-  tag: v2.6.0
+  tag: v2.6.1
+
+  # configure which port prometheus metrics are served on.
+  # setting to a positive number will also annotate calico-node with the prometheus scrape autodiscovery annotations.
+  # set to 0 to disable prometheus metrics altogether.
+  prometheusMetricsPort: 9081
+  logLevel: info
   env:
     # Optional environment variables for configuring Calico node.
     # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
-    # - name: FELIX_LOGSEVERITYSCREEN
-    #   value: "debug"
+    # - name: FELIX_REPORTINGINTERVALSECS
+    #   value: "500"
   # Optional configuration for setting resource limits on the Calico node container.
   resources:
     requests:
@@ -59,22 +72,26 @@ node:
     limits:
       cpu: #"2000m"
       memory: #"1024Mi"
+  seccompProfile: ""
+  appArmorProfile: ""
 
 # Configuration for setting up Calico CNI.
 cni:
   # cni does not use imageRegistry as it is an external OS image
   image: quay.io/calico/cni
-  tag: v3.10.0
+  tag: v3.10.1
   env:
     # Optional environment variables for configuring Calico CNI.
     # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
     # - name: FOO
     #   value: bar
+  seccompProfile: ""
+  appArmorProfile: ""
 
 # Configuration for setting up Calico kube controllers
 kubeControllers:
   image: quay.io/tigera/kube-controllers
-  tag: v2.6.0
+  tag: v2.6.1
   env:
     # Optional environment variables for configuring Calico kube controllers.
     # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
@@ -88,11 +105,13 @@ kubeControllers:
     limits:
       cpu: #"2000m"
       memory: #"1024Mi"
+  seccompProfile: ""
+  appArmorProfile: ""
 
 # Configuration for setting up Typha
 typha:
   image: quay.io/tigera/typha
-  tag: v2.6.0
+  tag: v2.6.1
   enabled: false
   env:
     # Optional environment variables for configuring Typha.
@@ -118,11 +137,13 @@ typha:
     # Change these if you generated certs with different common names on them
     typhaCommonName: calico-typha
     felixCommonName: calico-felix
+  seccompProfile: ""
+  appArmorProfile: ""
 
 # Configuration for the Calico aggregated API server.
 apiserver:
   image: quay.io/tigera/cnx-apiserver
-  tag: v2.6.0
+  tag: v2.6.1
   # Authentication information for securing communications between TSEE manager and TSEE apiserver.
   # Leave blank to use self-signed certs.
   tls:
@@ -143,11 +164,13 @@ apiserver:
     limits:
       cpu: #"2000m"
       memory: #"1024Mi"
+  seccompProfile: ""
+  appArmorProfile: ""
 
 # Configuration for the Calico query server.
 queryserver:
   image: quay.io/tigera/cnx-queryserver
-  tag: v2.6.0
+  tag: v2.6.1
   env:
     # Optional environment variables for configuring the Calico query server.
     # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
@@ -161,19 +184,25 @@ queryserver:
     limits:
       cpu: #"2000m"
       memory: #"1024Mi"
+  seccompProfile: ""
+  appArmorProfile: ""
 
 calicoctl:
+  enabled: false
   image: quay.io/tigera/calicoctl
-  tag: v2.6.0
+  tag: v2.6.1
+  seccompProfile: ""
+  appArmorProfile: ""
+  binPath: /bin
 
 dikastes:
   image: quay.io/tigera/dikastes
-  tag: v2.6.0
+  tag: v2.6.1
 
 flexvol:
   # flexvol does not use imageRegistry as it is an external OS image
   image: quay.io/calico/pod2daemon-flexvol
-  tag: v3.10.0
+  tag: v3.10.1
 
 cpHorizontalAutoscaler:
   image: gcr.io/google-containers/cluster-proportional-autoscaler-amd64
@@ -183,12 +212,9 @@ cpVerticalAutoscaler:
   image: gcr.io/google-containers/cpvpa-amd64
   tag: v0.6.0
 
-# Optional configuration for setting custom BGP templates
-bgp:
-  birdConfigTemplate:
-  birdIpamConfigTemplate:
-  bird6ConfigTemplate:
-  bird6IpamConfigTemplate:
+# Optional configuration for setting custom BGP templates where
+# key is the filename of the template and value is the contents of the template.
+bgp: {}
 
 # TODO: move to helpers
 rbac: ""
@@ -205,7 +231,7 @@ imagePullSecrets: {}
 # Configuration for the Tigera Cloud Controllers.
 cloudControllers:
   image: quay.io/tigera/cloud-controllers
-  tag: v2.6.0
+  tag: v2.6.1
   enabled: false
   # Optional configuration for setting resource limits on the Cloud Controllers container.
   resources:
