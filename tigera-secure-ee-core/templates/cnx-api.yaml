@@ -121,6 +121,7 @@ rules:
   resources:
     - networksets
     - globalnetworksets
+    - networksets
     - globalnetworkpolicies
     - tier.globalnetworkpolicies
     - networkpolicies
@@ -207,6 +208,7 @@ rules:
       - hostendpoints
       - licensekeys
       - globalalerts
+      - globalalerttemplates
       - globalnetworksets
       - networksets
       - globalthreatfeeds
@@ -370,20 +372,6 @@ spec:
 {{ tuple .Values.apiserver.resources | include "calico.resourceLimits" | indent 8 -}}
         args:
           - "--secure-port=5443"
-{{- if eq .Values.platform "eks" }}
-          # API servers normally look for authentication information in the configmap
-          # extension-apiserver-authentication.  EKS doesn't include all the values that
-          # an API server would normally expect, so we disable this lookup. The only
-          # value we actually need from this configmap is requestheader-client-ca-file
-          # which *is* present, so we just volume-mount the config map and set it via
-          # the next flag.
-          - "--authentication-skip-lookup=true"
-          # This CA is the root of trust for the certificate that the main Kube API server
-          # uses when it proxies requests *to* this extension API server.  This is how we
-          # know we are getting requests from the real API server and can believe that it
-          # has already handled authenticating the end user.
-          - "--requestheader-client-ca-file=/code/certificates/requestheader-client-ca-file"
-{{- end }}
           - "--audit-policy-file=/etc/tigera/audit/policy.conf"
           - "--audit-log-path=/var/log/calico/audit/tsee-audit.log"
         env:
@@ -428,11 +416,6 @@ spec:
             name: var-log-calico-audit
           - mountPath: /etc/tigera/audit
             name: audit-policy-ee
-{{- if eq .Values.platform "eks" }}
-          - mountPath: /code/certificates/requestheader-client-ca-file
-            name: requestheader-client-ca-file
-            subPath: requestheader-client-ca-file
-{{- end }}
           - mountPath: /code/apiserver.local.config/certificates
             name: apiserver-certs
         livenessProbe:
@@ -442,6 +425,14 @@ spec:
             scheme: HTTPS
           initialDelaySeconds: 90
           periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/ready
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 5
 {{- if .Values.apiserver.runAsPrivileged }}
         securityContext:
           privileged: true
@@ -546,11 +537,6 @@ spec:
         - name: etcd-certs
           secret:
             secretName: calico-etcd-secrets
-{{- end }}
-{{- if eq .Values.platform "eks" }}
-        - name: requestheader-client-ca-file
-          configMap:
-            name: extension-apiserver-authentication
 {{- end }}
         - name: apiserver-certs
           secret:

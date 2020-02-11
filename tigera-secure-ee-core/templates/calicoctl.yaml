@@ -1,5 +1,4 @@
 {{- if .Values.calicoctl.enabled }}
-
 {{ if ne .Values.datastore "kubernetes" }}
   {{ fail "calicoctl install only supported with kubernetes datastore" }}
 {{ end }}
