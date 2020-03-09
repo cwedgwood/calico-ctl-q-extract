@@ -52,7 +52,7 @@ etcd:
 # Configuration for setting up Calico node
 node:
   image: quay.io/tigera/cnx-node
-  tag: v2.7.0
+  tag: v2.7.1
 
   # configure which port prometheus metrics are served on.
   # setting to a positive number will also annotate calico-node with the prometheus scrape autodiscovery annotations.
@@ -91,7 +91,7 @@ cni:
 # Configuration for setting up Calico kube controllers
 kubeControllers:
   image: quay.io/tigera/kube-controllers
-  tag: v2.7.0
+  tag: v2.7.1
   env:
     # Optional environment variables for configuring Calico kube controllers.
     # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
@@ -111,7 +111,7 @@ kubeControllers:
 # Configuration for setting up Typha
 typha:
   image: quay.io/tigera/typha
-  tag: v2.7.0
+  tag: v2.7.1
   enabled: false
   env:
     # Optional environment variables for configuring Typha.
@@ -143,7 +143,7 @@ typha:
 # Configuration for the Calico aggregated API server.
 apiserver:
   image: quay.io/tigera/cnx-apiserver
-  tag: v2.7.0
+  tag: v2.7.1
   # Authentication information for securing communications between TSEE manager and TSEE apiserver.
   # Leave blank to use self-signed certs.
   tls:
@@ -170,7 +170,7 @@ apiserver:
 # Configuration for the Calico query server.
 queryserver:
   image: quay.io/tigera/cnx-queryserver
-  tag: v2.7.0
+  tag: v2.7.1
   env:
     # Optional environment variables for configuring the Calico query server.
     # These should match the EnvVar spec of the corev1 Kubernetes API. For example:
@@ -190,14 +190,14 @@ queryserver:
 calicoctl:
   enabled: false
   image: quay.io/tigera/calicoctl
-  tag: v2.7.0
+  tag: v2.7.1
   seccompProfile: ""
   appArmorProfile: ""
   binPath: /bin
 
 dikastes:
   image: quay.io/tigera/dikastes
-  tag: v2.7.0
+  tag: v2.7.1
 
 flexvol:
   # flexvol does not use imageRegistry as it is an external OS image
@@ -231,7 +231,7 @@ imagePullSecrets: {}
 # Configuration for the Tigera Cloud Controllers.
 cloudControllers:
   image: quay.io/tigera/cloud-controllers
-  tag: v2.7.0
+  tag: v2.7.1
   enabled: false
   # Optional configuration for setting resource limits on the Cloud Controllers container.
   resources:
