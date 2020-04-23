@@ -202,7 +202,7 @@ dikastes:
 flexvol:
   # flexvol does not use imageRegistry as it is an external OS image
   image: quay.io/calico/pod2daemon-flexvol
-  tag: v3.13.1
+  tag: v3.13.3
 
 cpHorizontalAutoscaler:
   image: gcr.io/google-containers/cluster-proportional-autoscaler-amd64
