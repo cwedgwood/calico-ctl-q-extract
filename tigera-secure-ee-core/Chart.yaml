@@ -3,4 +3,4 @@ appVersion: v2.7.5
 description: Tigera Secure Enterprise Edition - Core components required in order
   to install the 'tigera-secure-ee' chart.
 name: tigera-secure-ee-core
-version: v2.7.5-1
+version: v2.7.5-2
